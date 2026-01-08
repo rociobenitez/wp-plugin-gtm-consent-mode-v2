@@ -1,44 +1,76 @@
 # WP Minimal Consent (GTM + Consent Mode v2)
 
-Minimal WordPress CMP plugin integrating **Google Consent Mode v2** with a lightweight **cookie banner**, **GTM compatibility** and **code-only configuration** (no admin UI). Advanced Mode defaults, regional denied, wait_for_update, and persistent preferences.
+Minimal **WordPress CMP plugin** that integrates **Google Consent Mode v2** with a lightweight **cookie banner**, **always-on GTM strategy**, and a **developer-first configuration approach**.
 
-## Features
+The plugin acts as a **Consent Management Layer**, while **all providers (GA4, Ads, Meta, Clarity, etc.) are managed inside Google Tag Manager**.
 
-- Consent Mode v2 (ad_storage, analytics_storage, ad_user_data, ad_personalization)
-- Advanced Mode defaults before GTM
-- Regional defaults (EEE/UK/CH)
-- Banner + granular panel (Analytics/Marketing)
-- Persistent preferences + floating “Preferences” button
-- Optional debug logs (`WPMC_DEBUG`)
+## Key Features
+
+- Google Consent Mode v2 (`ad_storage`, `analytics_storage`, `ad_user_data`, `ad_personalization`)
+- **Advanced Mode**: default `denied` **before GTM loads**
+- GTM always loaded (Consent Mode–first strategy)
+- Cookie-based consent storage (1st-party cookie)
+- Banner + granular preferences panel (Analytics / Marketing)
+- Floating “Preferences” button
+- Optional debug logs
+- No external dependencies
 
 ## Requirements
 
-- WordPress 5.9+ / PHP 7.4+
-- Google Tag Manager container (Web)
-- (Optional) GA4 test property
+- WordPress 5.9+
+- PHP 7.4+
+- Google Tag Manager (Web container)
+- GTM configured to respect Consent Mode (required)
 
-## Install
+## Installation
 
-1. Copy the folder `wp-minimal-consent` into `wp-content/plugins/`.
-2. Activate the plugin in **WP → Plugins**.
-3. Edit constants at the top of `wp-minimal-consent.php`:
-   - `WPMC_GTM_ID`: your GTM container ID
-   - texts, position, `WPMC_DEBUG`, etc.
+1. Copy the folder `wp-minimal-consent` into `wp-content/plugins/`
+2. Activate the plugin in **WP → Plugins**
+3. Go to **Settings → WP Minimal Consent**
+4. Configure:
+   - GTM Container ID
+   - Policy version
+   - Optional texts and debug mode
 
-## How it works
+## How it works (Architecture)
 
-- Sets `consent default` (denied + region + wait_for_update) **before** GTM.
-- Restores user choice from `localStorage` and sends `consent update`.
-- Banner: Accept / Reject shortcuts.
-- Preferences panel: toggles map to:
-  - Analytics → `analytics_storage`
-  - Marketing → `ad_storage`, `ad_user_data`, `ad_personalization`
+1. **Before GTM loads**
 
-## Dev / Debug
+   - `gtag('consent','default', …)` is executed with all storage types set to `denied`
+   - `wait_for_update` is applied
 
-- Enable `WPMC_DEBUG` to print every `consent default/update` on console.
-- Test with Local (WP Engine) **Live Links** + GTM Preview.
+2. **GTM loads normally**
+
+   - GTM is always loaded
+   - Tags will not fire unless consent conditions are met
+
+3. **User interaction**
+
+   - Banner stores preferences in a **first-party cookie**
+   - Consent Mode is updated via:
+     ```
+     gtag('consent','update', {...})
+     ```
+   - A `wpmc_consent_update` event is pushed to `dataLayer`
+
+4. **GTM decides**
+   - All providers (GA, Ads, Meta, Clarity…) are controlled in GTM
+   - The plugin does **not** inject analytics/ads scripts directly
+
+## Development & Debugging
+
+- Enable **Debug** in plugin settings
+- Inspect:
+  - `dataLayer` entries
+  - Consent updates
+  - Network requests (before/after consent)
+- Recommended:
+  - GTM Preview Mode
+  - Chrome DevTools → Application → Cookies
 
 ## Roadmap
 
-- i18n, A11y enhancements, categories fine-grain, basic-mode option.
+- Improved accessibility (focus trap)
+- i18n support
+- Optional iframe placeholders (YouTube / Maps)
+- Optional cookie cleanup on revocation
