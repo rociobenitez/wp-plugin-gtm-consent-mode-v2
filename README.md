@@ -20,9 +20,9 @@ Su función es **recoger el consentimiento del usuario, persistirlo de forma seg
 - **GTM siempre cargado**, pero con todo en `denied` por defecto
 - **Consent Mode v2 es la fuente de verdad**
 - **El plugin no decide qué scripts cargar**, solo:
-  1. Recoge el consentimiento
-  2. Lo guarda (cookie 1ª parte)
-  3. Emite señales estándar (`gtag` + `dataLayer`)
+  - Recoge el consentimiento
+  - Lo guarda (cookie 1ª parte)
+  - Emite señales estándar (`gtag` + `dataLayer`)
 - **Sin dependencias externas**
 - **Sin bloat**
 - **Pensado para proyectos reales con SEO / Analytics / Ads**
@@ -177,8 +177,7 @@ _(Opcional para testing: GA4 / Ads / Clarity / etc.)_
 
 ## Integración con Google Tag Manager
 
-Consulta la guía detallada:
-📄 [`gtm_instructions.md`](gtm_instructions.md)
+Consulta la guía detallada: [`gtm_instructions.md`](gtm_instructions.md)
 
 Incluye:
 
