@@ -38,8 +38,9 @@ if ( is_admin() ) {
 
 add_action('admin_notices', function () {
   if (!current_user_can('manage_options')) return;
-  if (!WPMC_GTM_ID || WPMC_GTM_ID === 'GTM-XXXXXXX') {
-    echo '<div class="notice notice-error"><p><strong>WP Minimal Consent:</strong> configura tu <code>WPMC_GTM_ID</code> en el archivo del plugin.</p></div>';
+  $gtm_id = (string) wpmc_get_option( 'gtm_id' );
+  if ( ! $gtm_id || $gtm_id === 'GTM-XXXXXXX' ) {
+    echo '<div class="notice notice-error"><p><strong>WP Minimal Consent:</strong> configura tu <strong>GTM Container ID</strong> en <em>Ajustes → WP Minimal Consent</em>.</p></div>';
   }
 });
 
