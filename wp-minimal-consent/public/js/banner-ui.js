@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Activa todos los scripts bloqueados de una categoría (analytics / ads / functional)
   const wpmcActivateCategory = (category) => {
     const nodes = document.querySelectorAll(
-      `script[type="text/plain"][data-wpmc-category="${category}"]`
+      `script[type="text/plain"][data-wpmc-category="${category}"]`,
     );
 
     if (!nodes.length) return 0;
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "[WPMC] Activated category:",
         category,
         "scripts:",
-        nodes.length
+        nodes.length,
       );
     }
 
@@ -102,6 +102,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // Actualizar GTM
       const gtmState = Controller.mapToGTM(preferences);
       wpmcUpdateConsentMode(gtmState);
+
+      // Disparar evento personalizado para GTM
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "consent_update" });
 
       // Debug
       if (window.WPMC_CONFIG?.isDebug) {
