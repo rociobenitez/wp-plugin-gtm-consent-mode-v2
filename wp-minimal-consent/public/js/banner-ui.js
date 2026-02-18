@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+const wpmcInitBannerUI = () => {
   // REFERENCIAS DOM
   const UI = {
     banner: document.getElementById("wpmc-banner"),
@@ -19,6 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   if (!UI.banner || !UI.modal || !UI.btns.accept || !UI.btns.reject) return;
+
+  // Evita doble binding si se llama init varias veces.
+  // (Útil en sites con navegación sin recarga: PJAX/SPA)
+  if (UI.banner.dataset.wpmcBound === "1") return;
+  UI.banner.dataset.wpmcBound = "1";
 
   // Variable para recordar qué botón abrió el modal
   // (para devolver el foco por accesibilidad)
@@ -230,4 +235,15 @@ document.addEventListener("DOMContentLoaded", () => {
       Controller.closeModal();
     }
   });
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", wpmcInitBannerUI);
+} else {
+  wpmcInitBannerUI();
+}
+
+// Re-init al volver con back/forward cache (sin recarga real)
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) wpmcInitBannerUI();
 });
