@@ -1,110 +1,393 @@
+/* ===================================================
+   WP Minimal Consent — Banner & Modal Styles
+   =================================================== */
+
+/* =====================================================
+   1. BANNER BASE (común a barra e modal)
+   ===================================================== */
+
+/* Oculto hasta que JS inicialice (previene flash de contenido) */
 #wpmc-banner {
-  background: #111;
-  color: #fff;
-}
-#wpmc-banner .wpmc-content {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  font: 14px/1.35 system-ui, -apple-system, Segoe UI, Roboto;
-  width: min(90%, 1440px);
-  margin-inline: auto;
-}
-.wpmc-banner button {
-  border: 0;
-  padding: 8px 16px;
-  line-height: 24px;
-  cursor: pointer;
-  border-radius: 0;
-  white-space: nowrap;
-  overflow-wrap: break-word;
-}
-#wpmc-accept {
-  background: #fff;
-  color: #212121;
-  :hover {
-    background: #f0f0f0;
-  }
-  :focus {
-    outline: 2px solid #212121;
-    outline-offset: 2px;
-  }
-}
-#wpmc-reject {
-  background: #333;
-  color: #fff;
-  :hover {
-    background: #000;
-  }
-  :focus {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-}
-#wpmc-manage {
-  background: transparent;
-  color: #bbb;
-  border: 1px solid #bbb;
-  :hover {
-    color: #fff;
-    border-color: #fff;
-  }
-  :focus {
-    outline: 2px solid #fff;
-    outline-offset: 2px;
-  }
-}
-@media (max-width: 640px) {
-  #wpmc-banner .wpmc-content {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  display: none;
 }
 .wpmc-banner[hidden] {
   display: none !important;
 }
-.wpmc-banner .wpmc-title {
-  font-size: 17px;
-  margin: 0 0 6px;
+
+/* Reset de tipografía base */
+.wpmc-banner,
+.wpmc-banner * {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   2. VARIANTE: BARRA INFERIOR
+   ===================================================== */
+
+#wpmc-banner.wpmc-banner--bar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 99999;
+  background: #1a1a1a;
+  color: #fff;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#wpmc-banner.wpmc-banner--bar .wpmc-content {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  font:
+    14px/1.45 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+  width: min(92%, 1440px);
+  margin-inline: auto;
+}
+
+#wpmc-banner.wpmc-banner--bar .wpmc-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 3px;
   color: #fff;
 }
-.wpmc-banner .wpmc-desc {
-  font-size: 14px;
-  margin: 8px 0 0;
-  color: #f8f8f8;
+
+#wpmc-banner.wpmc-banner--bar .wpmc-desc {
+  font-size: 13px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.65);
   text-wrap: balance;
 }
 
-/* Botón flotante de preferencias */
+#wpmc-banner.wpmc-banner--bar .wpmc-policy-link {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+  margin-left: 4px;
+}
+#wpmc-banner.wpmc-banner--bar .wpmc-policy-link:hover {
+  color: #fff;
+}
+
+/* Acciones barra */
+#wpmc-banner.wpmc-banner--bar .wpmc-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Botones base barra */
+#wpmc-banner.wpmc-banner--bar button {
+  border: 0;
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+  font:
+    14px/1 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+/* Aceptar (barra) */
+#wpmc-banner.wpmc-banner--bar #wpmc-accept {
+  background: #fff;
+  color: #1a1a1a;
+  padding: 9px 20px;
+  font-weight: 600;
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-accept:hover {
+  background: #e8e8e8;
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-accept:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Rechazar (barra) */
+#wpmc-banner.wpmc-banner--bar #wpmc-reject {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 8px 20px;
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-reject:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-reject:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Gestionar (barra) */
+#wpmc-banner.wpmc-banner--bar #wpmc-manage {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 8px 20px;
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-manage:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+#wpmc-banner.wpmc-banner--bar #wpmc-manage:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Responsive barra */
+@media (max-width: 640px) {
+  #wpmc-banner.wpmc-banner--bar .wpmc-content {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  #wpmc-banner.wpmc-banner--bar .wpmc-actions {
+    flex-wrap: wrap;
+  }
+  #wpmc-banner.wpmc-banner--bar #wpmc-accept,
+  #wpmc-banner.wpmc-banner--bar #wpmc-reject {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* =====================================================
+   3. VARIANTE: MODAL CENTRADO
+   ===================================================== */
+
+#wpmc-banner.wpmc-banner--modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 15, 15, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font:
+    14px/1.5 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+}
+
+/* Tarjeta central */
+#wpmc-banner.wpmc-banner--modal .wpmc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #fff;
+  color: #1a1a1a;
+  border-radius: 16px;
+  max-width: 460px;
+  width: 100%;
+  padding: 0;
+  margin-inline: 0;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* Cabecera de la tarjeta */
+#wpmc-banner.wpmc-banner--modal .wpmc-modal-header {
+  padding: 1.5rem 1.5rem 0;
+}
+
+/* Ícono */
+#wpmc-banner.wpmc-banner--modal .wpmc-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #f4f4f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+#wpmc-banner.wpmc-banner--modal .wpmc-modal-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* Título modal */
+#wpmc-banner.wpmc-banner--modal .wpmc-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #111;
+  line-height: 1.3;
+}
+
+/* Descripción modal */
+#wpmc-banner.wpmc-banner--modal .wpmc-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Enlace de política */
+#wpmc-banner.wpmc-banner--modal .wpmc-policy-link {
+  color: #111;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-left: 3px;
+  white-space: nowrap;
+}
+#wpmc-banner.wpmc-banner--modal .wpmc-policy-link:hover {
+  color: #555;
+}
+
+/* Cuerpo de acciones */
+#wpmc-banner.wpmc-banner--modal .wpmc-actions {
+  display: flex;
+  gap: 8px;
+  padding: 1rem 1.5rem 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* Botones base modal */
+#wpmc-banner.wpmc-banner--modal button {
+  border: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  font:
+    14px/1 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+  text-align: center;
+  width: 100%;
+}
+
+/* Aceptar (modal) */
+#wpmc-banner.wpmc-banner--modal #wpmc-accept {
+  background: #111;
+  color: #fff;
+  padding: 0.85rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-accept:hover {
+  background: #333;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-accept:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 3px;
+}
+
+/* Rechazar (modal) */
+#wpmc-banner.wpmc-banner--modal #wpmc-reject {
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #e5e7eb;
+  padding: 0.85rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-reject:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-reject:focus-visible {
+  outline: 2px solid #374151;
+  outline-offset: 3px;
+}
+
+/* Gestionar (modal) */
+#wpmc-banner.wpmc-banner--modal #wpmc-manage {
+  background: #fff;
+  color: #374151;
+  border: 1.5px solid #e5e7eb;
+  padding: 0.85rem 1rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-manage:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+#wpmc-banner.wpmc-banner--modal #wpmc-manage:focus-visible {
+  outline: 2px solid #374151;
+  outline-offset: 3px;
+}
+
+/* Responsive modal */
+@media (max-width: 480px) {
+  #wpmc-banner.wpmc-banner--modal {
+    padding: 12px;
+    align-items: flex-end;
+  }
+  #wpmc-banner.wpmc-banner--modal .wpmc-content {
+    border-radius: 16px 16px 12px 12px;
+    max-width: 100%;
+  }
+
+  #wpmc-banner.wpmc-banner--modal .wpmc-actions {
+    flex-direction: column;
+  }
+}
+
+/* =====================================================
+   4. BOTÓN FLOTANTE DE PREFERENCIAS
+   ===================================================== */
+
 #wpmc-preferences-btn {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  display: none;
   width: 44px;
   height: 44px;
   border-radius: 999px;
   border: 0;
   cursor: pointer;
-  background: #212121;
+  background: #1a1a1a;
   color: #fff;
-  z-index: 2147483647;
-  display: flex;
+  z-index: 99998;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-#wpmc-preferences-btn:hover {
-  filter: brightness(1.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 #wpmc-preferences-btn[hidden] {
   display: none !important;
 }
-#wpmc-preferences-btn:focus {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
+#wpmc-preferences-btn:hover {
+  background: #333;
+}
+#wpmc-preferences-btn:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 3px;
 }
 @media (prefers-reduced-motion: no-preference) {
   #wpmc-preferences-btn {
-    transition: filter 0.15s ease;
+    transition: background 0.15s;
   }
 }
 #wpmc-preferences-btn svg {
@@ -113,154 +396,291 @@
   fill: currentColor;
 }
 
-/* Modal de preferencias */
+/* =====================================================
+   5. MODAL DE PREFERENCIAS (panel de categorías)
+   ===================================================== */
+
 #wpmc-modal[hidden] {
   display: none !important;
 }
 .wpmc-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 999999999;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
 }
+
+/* Caja del modal de preferencias */
 .wpmc-modal .wpmc-box {
   background: #fff;
-  color: #212121;
-  border-radius: 6px;
-  max-width: 560px;
+  color: #1a1a1a;
+  border-radius: 12px;
+  max-width: 520px;
   width: 100%;
-  padding: 18px;
-  box-shadow: 0 32px 68px rgb(0 0 0 / 0.3);
+  padding: 26px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  font:
+    14px/1.5 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
 }
 .wpmc-modal .wpmc-title {
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 700;
   margin: 0 0 6px;
-  color: #212121;
+  color: #1a1a1a;
 }
 .wpmc-modal .wpmc-desc {
   font-size: 13px;
-  margin: 8px 0 0;
-  color: #333;
+  margin: 0;
+  color: #777;
+  line-height: 1.5;
 }
+
+/* Filas de categorías */
 .wpmc-row {
   display: flex;
   gap: 16px;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
-  border-top: 1px solid #eee;
+  padding: 14px 0;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 8px;
 }
-.wpmc-row:first-of-type {
-  border-top: none;
+.wpmc-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
 }
-.wpmc-actions {
+.wpmc-row .wpmc-desc {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+/* Acciones del modal de preferencias */
+.wpmc-modal .wpmc-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  margin-top: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
 }
+
+/* Botones del modal de preferencias */
 .wpmc-btn {
   border: 0;
-  padding: 8px 16px;
-  border-radius: 0;
   cursor: pointer;
-  font-size: 15px;
-  line-height: 24px;
+  border-radius: 6px;
+  font:
+    14px/1 system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 .wpmc-btn--primary {
-  background: #212121;
+  background: #1a1a1a;
   color: #fff;
-  :hover {
-    background: #000;
-  }
-  :focus {
-    outline: 2px solid #000;
-    outline-offset: 2px;
+  padding: 0.85rem 1rem;
+  font-weight: 600;
+}
+.wpmc-btn--primary:hover {
+  background: #333;
+}
+.wpmc-btn--primary:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+.wpmc-btn--text {
+  background: transparent;
+  color: #555;
+  padding: 0.85rem 1rem;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.wpmc-btn--text:hover {
+  color: #555;
+}
+.wpmc-btn--text:focus-visible {
+  outline: 2px solid #aaa;
+  outline-offset: 2px;
+}
+
+/* =====================================================
+   6. LISTA DE COOKIES COLAPSABLE
+   ===================================================== */
+
+.wpmc-cookies-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  color: #9ca3af;
+  padding: 5px 0 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.wpmc-cookies-toggle:hover {
+  color: #374151;
+}
+.wpmc-cookies-toggle svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.wpmc-cookies-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.wpmc-cookies-list[hidden] {
+  display: none;
+}
+.wpmc-cookies-list {
+  margin-top: 8px;
+  overflow-x: auto;
+}
+.wpmc-cookies-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  color: #6b7280;
+}
+.wpmc-cookies-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  padding: 4px 10px 4px 0;
+  border-bottom: 1px solid #f0f0f0;
+  white-space: nowrap;
+}
+.wpmc-cookies-table td {
+  padding: 5px 10px 5px 0;
+  border-bottom: 1px solid #fafafa;
+  vertical-align: top;
+  line-height: 1.4;
+}
+.wpmc-cookies-table tr:last-child td {
+  border-bottom: none;
+}
+.wpmc-cookies-table a {
+  color: #374151;
+  text-underline-offset: 2px;
+}
+.wpmc-cookies-table a:hover {
+  color: #111;
+}
+@media (max-width: 420px) {
+  .wpmc-cookies-table .col-type {
+    display: none;
   }
 }
-.wpmc-btn--ghost {
-  background: #f2f2f2;
-  color: #212121;
-  :hover {
-    background: #e0e0e0;
+@media (prefers-reduced-motion: no-preference) {
+  .wpmc-cookies-toggle svg {
+    transition: transform 0.15s;
   }
-  :focus {
-    outline: 2px solid #212121;
-    outline-offset: 2px;
-  }
+}
+
+/* =====================================================
+   7. BADGE "SIEMPRE ACTIVO" (cookies necesarias)
+   ===================================================== */
+
+.wpmc-always-active {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #16a34a;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* =====================================================
+   7. TOGGLE SWITCH
+   ===================================================== */
+
+.wpmc-switch-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.wpmc-switch-label--locked {
+  cursor: not-allowed;
+  opacity: 1;
+}
+.wpmc-switch-label--locked .wpmc-switch {
+  cursor: not-allowed;
+}
+.wpmc-switch-label--locked input[type="checkbox"]:checked ~ .wpmc-switch {
+  background: #4caf50;
+}
+.wpmc-switch-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 .wpmc-switch {
   position: relative;
-  width: 42px;
-  height: 24px;
-  background: #ddd;
-  border-radius: 999px;
-  transition: background 0.15s;
-}
-.wpmc-switch input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-input[type="checkbox"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  position: relative;
+  display: inline-block;
   width: 44px;
-  height: 24px;
-  margin: 0;
+  height: 26px;
   background: #d0d5d2;
-  border-radius: 50px;
-  cursor: pointer;
-  outline: 0;
-  border: none;
-  top: 0;
-}
-input[type="checkbox"]:checked {
-  background: #4caf50;
-}
-input[type="checkbox"]:before {
-  position: absolute;
-  content: "";
-  height: 20px;
-  width: 20px;
-  left: 2px;
-  bottom: 2px;
-  border-radius: 50%;
-  background-color: #fff;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-  margin: 0;
-}
-input[type="checkbox"]:checked:before {
-  transform: translateX(20px);
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 .wpmc-switch::after {
   content: "";
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
   background: #fff;
-  transition: left 0.15s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
-.wpmc-switch input:checked + .wpmc-switch::after {
-  left: 21px;
+.wpmc-switch-label input[type="checkbox"]:checked ~ .wpmc-switch {
+  background: #4caf50;
 }
-.wpmc-switch input:checked + .wpmc-switch {
-  background: #212121;
+.wpmc-switch-label input[type="checkbox"]:checked ~ .wpmc-switch::after {
+  transform: translateX(18px);
 }
-.wpmc-label {
-  font-size: 14px;
-  margin-right: 12px;
-  font-weight: 600;
-  color: #212121;
+.wpmc-switch-label input[type="checkbox"]:focus-visible ~ .wpmc-switch {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wpmc-switch {
+    transition: background 0.2s;
+  }
+  .wpmc-switch::after {
+    transition: transform 0.2s;
+  }
 }

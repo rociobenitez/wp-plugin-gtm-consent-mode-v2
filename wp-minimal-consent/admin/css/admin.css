@@ -1,0 +1,240 @@
+/* =====================================================
+   WP Minimal Consent — Admin Panel Styles
+   ===================================================== */
+
+/* Contenedor principal */
+.wpmc-admin {
+  max-width: 780px;
+  padding-bottom: 40px;
+}
+
+/* ---- Header ---- */
+.wpmc-admin-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.wpmc-admin-header__icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wpmc-admin-header__icon .dashicons {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+.wpmc-admin-header__title {
+  font-size: 17px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+  line-height: 1.2 !important;
+}
+.wpmc-admin-header__sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0 !important;
+}
+.wpmc-admin-header__badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.65);
+  padding: 4px 11px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Cards ---- */
+.wpmc-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.wpmc-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  background: #f9fafb;
+}
+.wpmc-card__header .dashicons {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: #9ca3af;
+}
+.wpmc-card__desc {
+  font-size: 13px;
+  color: #6b7280;
+  padding: 10px 20px 0;
+  margin: 0;
+}
+
+.wpmc-card__desc code.cookie-format {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* ---- Tabla de campos ---- */
+.wpmc-admin .form-table {
+  margin: 0;
+  border: 0;
+}
+.wpmc-admin .form-table th {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  padding: 14px 20px;
+  width: 210px;
+  vertical-align: top;
+}
+.wpmc-admin .form-table td {
+  padding: 12px 20px 14px;
+  vertical-align: top;
+}
+
+.wpmc-admin .form-table td label {
+  font-size: 13px;
+  color: #374151;
+}
+
+.wpmc-admin .form-table tr {
+  border-top: 1px solid #f3f4f6;
+}
+.wpmc-admin .form-table tr:first-child {
+  border-top: 0;
+}
+
+/* ---- Descripciones de campo ---- */
+.wpmc-admin p.description {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 5px;
+  font-style: normal;
+}
+
+/* ---- Inputs ---- */
+.wpmc-admin .regular-text,
+.wpmc-admin .large-text,
+.wpmc-admin input[type="number"],
+.wpmc-admin select {
+  border-color: #d1d5db;
+  border-radius: 6px;
+  box-shadow: none;
+  font-size: 13px;
+}
+.wpmc-admin .regular-text:focus,
+.wpmc-admin .large-text:focus,
+.wpmc-admin input[type="number"]:focus,
+.wpmc-admin select:focus {
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(26, 26, 26, 0.12);
+  outline: none;
+}
+
+.wpmc-admin .regular-text,
+.wpmc-admin .large-text {
+  width: 100%;
+}
+.wpmc-admin input[type="number"] {
+  width: 100px;
+}
+.wpmc-admin select {
+  height: 34px;
+  padding: 0 8px;
+  width: 100%;
+  max-width: 14rem;
+}
+
+/* ---- Color picker ---- */
+.wpmc-color-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wpmc-color-picker {
+  width: 40px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fff;
+}
+.wpmc-color-picker:focus {
+  border-color: #1a1a1a;
+  outline: 2px solid rgba(26, 26, 26, 0.12);
+}
+.wpmc-color-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.wpmc-color--active .wpmc-color-swatch {
+  border-color: #d1d5db;
+}
+.wpmc-color-reset {
+  font-size: 12px !important;
+  color: #9ca3af !important;
+  border-color: #e5e7eb !important;
+}
+.wpmc-color-reset:not(:disabled):hover {
+  color: #374151 !important;
+  border-color: #d1d5db !important;
+}
+.wpmc-color-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Botón de guardar ---- */
+.wpmc-admin .submit {
+  padding: 0;
+  margin-top: 4px;
+}
+.wpmc-admin #submit {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  color: #fff !important;
+  padding: 10px 28px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 7px !important;
+  height: auto !important;
+  line-height: 1.5 !important;
+  box-shadow: none !important;
+  transition: background 0.15s !important;
+}
+.wpmc-admin #submit:hover {
+  background: #333 !important;
+  border-color: #333 !important;
+}
+.wpmc-admin #submit:focus {
+  outline: 2px solid #1a1a1a !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}

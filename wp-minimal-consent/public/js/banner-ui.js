@@ -13,6 +13,7 @@ const wpmcInitBannerUI = () => {
       close: document.getElementById("wpmc-close"),
     },
     toggles: {
+      functional: document.getElementById("wpmc-opt-functional"),
       analytics: document.getElementById("wpmc-opt-analytics"),
       ads: document.getElementById("wpmc-opt-marketing"),
     },
@@ -49,7 +50,7 @@ const wpmcInitBannerUI = () => {
         if (oldScript.async) s.async = true;
         if (oldScript.defer) s.defer = true;
       } else {
-        s.text = oldScript.text || oldScript.textContent || "";
+        s.textContent = oldScript.textContent || "";
       }
 
       // Reemplazo (esto dispara ejecución)
@@ -142,12 +143,13 @@ const wpmcInitBannerUI = () => {
       const current = window.RcConsent.getConsent();
 
       // Debug para ver si realmente estamos leyendo la cookie
-      if (window.WPMC_DEBUG)
+      if (window.WPMC_CONFIG?.isDebug)
         console.log("[WPMC] Hydrating form with:", current);
 
       // Si existe, usa valores guardados. Si no, false por defecto.
-      UI.toggles.analytics.checked = current ? current.prefs.analytics : false;
-      UI.toggles.ads.checked = current ? current.prefs.ads : false;
+      if (UI.toggles.functional) UI.toggles.functional.checked = current ? !!current.prefs.functional : false;
+      UI.toggles.analytics.checked = current ? !!current.prefs.analytics : false;
+      UI.toggles.ads.checked = current ? !!current.prefs.ads : false;
     },
 
     openModal: () => {
@@ -219,10 +221,21 @@ const wpmcInitBannerUI = () => {
   UI.btns.save?.addEventListener("click", () => {
     Controller.saveConsent({
       necessary: true,
-      functional: false, // Opcional
-      analytics: UI.toggles.analytics.checked,
-      ads: UI.toggles.ads.checked,
+      functional: UI.toggles.functional?.checked || false,
+      analytics: UI.toggles.analytics?.checked || false,
+      ads: UI.toggles.ads?.checked || false,
     });
+  });
+
+  // Colapsable de lista de cookies (delegado en el modal)
+  UI.modal.addEventListener("click", (e) => {
+    const btn = e.target.closest(".wpmc-cookies-toggle");
+    if (!btn) return;
+    const list = btn.nextElementSibling;
+    if (!list) return;
+    const expanded = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!expanded));
+    list.hidden = expanded;
   });
 
   // Cerrar Modal

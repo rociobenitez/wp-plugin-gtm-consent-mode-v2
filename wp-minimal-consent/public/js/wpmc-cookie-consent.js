@@ -22,13 +22,12 @@
     },
   });
 
-  // DEBUG: Log inicial
-  // if (config.isDebug) {
-  //   console.log("[RcConsent] init", {
-  //     cookieName: CONSENT_COOKIE_NAME,
-  //     policyVersion: CURRENT_POLICY_VERSION,
-  //   });
-  // }
+  if (config.isDebug) {
+    console.log("[WPMC] init", {
+      cookieName: CONSENT_COOKIE_NAME,
+      policyVersion: CURRENT_POLICY_VERSION,
+    });
+  }
 
   const setCookie = (name, value, options = {}) => {
     let cookieStr = `${name}=${encodeURIComponent(value)}`;
@@ -45,6 +44,7 @@
     const isLocal =
       location.hostname === "localhost" ||
       location.hostname === "127.0.0.1" ||
+      location.hostname === "::1" ||
       location.hostname.endsWith(".local");
     if (options.secure !== false && !isLocal) {
       cookieStr += "; Secure";
@@ -55,12 +55,12 @@
 
     document.cookie = cookieStr;
 
-    // DEBUG: Verificar si se ha guardado
-    // if (config.isDebug)
-    //   console.log(
-    //     "[RcConsent] Cookie set try:",
-    //     document.cookie.indexOf(name) > -1 ? "Success" : "Failed"
-    //   );
+    if (config.isDebug) {
+      console.log(
+        "[WPMC] Cookie set:",
+        document.cookie.indexOf(name) > -1 ? "OK" : "Failed"
+      );
+    }
   };
 
   const getCookie = (name) => {

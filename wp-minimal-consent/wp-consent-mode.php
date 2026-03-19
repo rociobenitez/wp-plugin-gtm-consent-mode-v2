@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WP Minimal Consent (GTM + Consent Mode v2)
  * Description: Banner de cookies + Google Consent Mode v2. GTM siempre, por defecto "denied", y actualiza según consentimiento.
- * Version: 0.1.1
+ * Version: 0.2.0
  * Author: Rocío Benítez García
  * Require at least: 5.9
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 /**
  * Configuración base
  */
-define('WPMC_VERSION', '0.1.1');
+define('WPMC_VERSION', '0.2.0');
 define('WPMC_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WPMC_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -39,8 +39,9 @@ if ( is_admin() ) {
 add_action('admin_notices', function () {
   if (!current_user_can('manage_options')) return;
   $gtm_id = (string) wpmc_get_option( 'gtm_id' );
-  if ( ! $gtm_id || $gtm_id === 'GTM-XXXXXXX' ) {
-    echo '<div class="notice notice-error"><p><strong>WP Minimal Consent:</strong> configura tu <strong>GTM Container ID</strong> en <em>Ajustes → WP Minimal Consent</em>.</p></div>';
+  if ( ! preg_match( '/^GTM-[A-Z0-9]{1,10}$/', $gtm_id ) ) {
+    $url = admin_url( 'admin.php?page=wpmc-settings' );
+    echo '<div class="notice notice-error"><p><strong>WP Minimal Consent:</strong> configura tu <strong>GTM Container ID</strong> en <a href="' . esc_url( $url ) . '">Consent → Ajustes</a>.</p></div>';
   }
 });
 
@@ -53,7 +54,7 @@ add_action('wp_enqueue_scripts', function () {
     'wpmc-banner-styles',
     plugins_url('public/css/banner.css', __FILE__),
     [],
-    '0.1.0'
+    WPMC_VERSION
   );
 
   // Store (cookies)
@@ -88,6 +89,29 @@ add_action('wp_enqueue_scripts', function () {
     'window.WPMC_CONFIG = ' . wp_json_encode( $cfg ) . ';',
     'before'
   );
+  // CSS personalizado de color (solo si hay valores guardados)
+  $color_accept  = wpmc_get_option( 'color_accept' );
+  $color_surface = wpmc_get_option( 'color_surface' );
+  $custom_css    = '';
+
+  if ( $color_accept ) {
+    $c = esc_attr( $color_accept );
+    $custom_css .= "#wpmc-banner.wpmc-banner--modal #wpmc-accept{background:{$c};}";
+    $custom_css .= "#wpmc-banner.wpmc-banner--modal #wpmc-accept:hover{background:{$c};filter:brightness(.88);}";
+    $custom_css .= ".wpmc-btn--primary{background:{$c};}";
+    $custom_css .= ".wpmc-btn--primary:hover{background:{$c};filter:brightness(.88);}";
+  }
+
+  if ( $color_surface ) {
+    $s = esc_attr( $color_surface );
+    $custom_css .= "#wpmc-banner.wpmc-banner--bar{background:{$s};}";
+    $custom_css .= "#wpmc-preferences-btn{background:{$s};}";
+    $custom_css .= "#wpmc-preferences-btn:hover{background:{$s};filter:brightness(1.2);}";
+  }
+
+  if ( $custom_css ) {
+    wp_add_inline_style( 'wpmc-banner-styles', $custom_css );
+  }
 }, 20 );
 
 /**
@@ -149,7 +173,7 @@ add_action('wp_head', function () {
     <?php
     
     // Carga GTM (si hay ID)
-  if ( $gtm_id && $gtm_id !== 'GTM-XXXXXXX' ) : ?>
+  if ( $gtm_id && preg_match( '/^GTM-[A-Z0-9]{1,10}$/', $gtm_id ) ) : ?>
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -157,6 +181,19 @@ add_action('wp_head', function () {
     })(window,document,'script','dataLayer',<?php echo wp_json_encode( $gtm_id ); ?>);</script>
   <?php endif;
 }, 0);
+
+/**
+ * BODY OPEN: GTM <noscript> fallback (para navegadores sin JS)
+ */
+add_action( 'wp_body_open', function () {
+  if ( (int) wpmc_get_option( 'noscript_by_theme' ) === 1 ) return;
+  $gtm_id = (string) wpmc_get_option( 'gtm_id' );
+  if ( ! $gtm_id || ! preg_match( '/^GTM-[A-Z0-9]{1,10}$/', $gtm_id ) ) return;
+  ?>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<?php echo esc_attr( $gtm_id ); ?>"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <?php
+}, 0 );
 
 /**
  * HEAD: Imprime providers bloqueados (no gestionados por GTM)
@@ -182,26 +219,44 @@ add_action( 'wp_head', function () {
  * FOOTER: Banner HTML
  */
 add_action('wp_footer', function () {
-  $inset  = 'auto 0 0 0';
-  $floatX = 'left:16px;right:auto;';
+  $policy_url   = wpmc_get_option( 'privacy_policy_url' );
+  $banner_style = wpmc_get_option( 'banner_style' ) === 'modal' ? 'modal' : 'bar';
   ?>
-  
-  <style>
-    #wpmc-banner{position:fixed;inset:<?php echo esc_attr( $inset ); ?>;z-index:99999;}
-    #wpmc-preferences-btn{position:fixed;bottom:16px;<?php echo esc_attr( $floatX ); ?>z-index:99998;display:none;}
-  </style>
 
-  <div id="wpmc-banner" class="wpmc-banner" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( wpmc_text('txt_title') ); ?>">
+  <div id="wpmc-banner" class="wpmc-banner wpmc-banner--<?php echo esc_attr( $banner_style ); ?>" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( wpmc_text('txt_title') ); ?>">
     <div class="wpmc-content">
+
+      <?php if ( $banner_style === 'modal' ) : ?>
+      <div class="wpmc-modal-header">
+        <div class="wpmc-modal-icon" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256"><path d="M224,120a40,40,0,0,1-40-40,8,8,0,0,0-8-8,40,40,0,0,1-40-40,8,8,0,0,0-8-8A104,104,0,1,0,232,128,8,8,0,0,0,224,120ZM75.51,99.51a12,12,0,1,1,0,17A12,12,0,0,1,75.51,99.51Zm25,73a12,12,0,1,1,0-17A12,12,0,0,1,100.49,172.49Zm23-40a12,12,0,1,1,17,0A12,12,0,0,1,123.51,132.49Zm41,48a12,12,0,1,1,0-17A12,12,0,0,1,164.49,180.49Z"></path></svg>
+        </div>
+        <p class="wpmc-title"><?php echo esc_html( wpmc_text('txt_title') ); ?></p>
+        <div class="wpmc-desc">
+          <?php echo esc_html( wpmc_text('txt_msg') ); ?>
+          <?php if ( $policy_url ) : ?>
+            <a href="<?php echo esc_url( $policy_url ); ?>" class="wpmc-policy-link" target="_blank" rel="noopener noreferrer">Más información</a>
+          <?php endif; ?>
+        </div>
+      </div>
+      <?php else : ?>
       <div>
         <p class="wpmc-title"><?php echo esc_html( wpmc_text('txt_title') ); ?></p>
-        <div class="wpmc-desc"><?php echo esc_html( wpmc_text('txt_msg') ); ?></div>
+        <div class="wpmc-desc">
+          <?php echo esc_html( wpmc_text('txt_msg') ); ?>
+          <?php if ( $policy_url ) : ?>
+            <a href="<?php echo esc_url( $policy_url ); ?>" class="wpmc-policy-link" target="_blank" rel="noopener noreferrer">Más información</a>
+          <?php endif; ?>
+        </div>
       </div>
+      <?php endif; ?>
+
       <div class="wpmc-actions">
-        <button id="wpmc-accept" class="wpmc-btn wpmc-btn--primary"><?php echo esc_html( wpmc_text('txt_accept') ); ?></button>
-        <button id="wpmc-reject" class="wpmc-btn wpmc-btn--ghost"><?php echo esc_html( wpmc_text('txt_reject') ); ?></button>
-        <button id="wpmc-manage" class="wpmc-btn wpmc-btn--link" type="button"><?php echo esc_html( wpmc_text('txt_manage') ); ?></button>
+        <button id="wpmc-accept" type="button"><?php echo esc_html( wpmc_text('txt_accept') ); ?></button>
+        <button id="wpmc-reject" type="button"><?php echo esc_html( wpmc_text('txt_reject') ); ?></button>
+        <button id="wpmc-manage" type="button"><?php echo esc_html( wpmc_text('txt_manage') ); ?></button>
       </div>
+
     </div>
   </div>
 
@@ -212,10 +267,34 @@ add_action('wp_footer', function () {
   </button>
 
   <div id="wpmc-modal" class="wpmc-modal" role="dialog" hidden>
-    <div class="wpmc-overlay" tabindex="-1" data-close></div>
+    <div class="wpmc-overlay" tabindex="-1" data-close aria-hidden="true"></div>
     <div class="wpmc-box">
-      <p class="wpmc-title"><?php echo esc_html( wpmc_text('txt_panel_title') ); ?></p>
+      <p id="wpmc-title" class="wpmc-title" tabindex="-1"><?php echo esc_html( wpmc_text('txt_panel_title') ); ?></p>
       <p class="wpmc-desc"><?php echo esc_html( wpmc_text('txt_panel_desc') ); ?></p>
+
+      <div class="wpmc-row">
+        <div>
+          <div class="wpmc-label"><?php echo esc_html( wpmc_text('txt_cat_necessary') ); ?></div>
+          <div class="wpmc-desc"><?php echo esc_html( wpmc_text('txt_cat_necessary_desc') ); ?></div>
+        </div>
+        <label class="wpmc-switch-label wpmc-switch-label--locked" aria-label="<?php echo esc_attr( wpmc_text('txt_always_active') ); ?>" title="<?php esc_attr_e( 'Las cookies necesarias no se pueden desactivar', 'wp-minimal-consent' ); ?>">
+          <input type="checkbox" checked disabled>
+          <span class="wpmc-switch"></span>
+        </label>
+      </div>
+      <?php wpmc_render_cookie_list( 'cookies_necessary' ); ?>
+
+      <div class="wpmc-row">
+        <div>
+          <div class="wpmc-label"><?php echo esc_html( wpmc_text('txt_cat_functional') ); ?></div>
+          <div class="wpmc-desc"><?php echo esc_html( wpmc_text('txt_cat_functional_desc') ); ?></div>
+        </div>
+        <label class="wpmc-switch-label">
+          <input id="wpmc-opt-functional" type="checkbox">
+          <span class="wpmc-switch"></span>
+        </label>
+      </div>
+      <?php wpmc_render_cookie_list( 'cookies_functional' ); ?>
 
       <div class="wpmc-row">
         <div>
@@ -227,6 +306,7 @@ add_action('wp_footer', function () {
           <span class="wpmc-switch"></span>
         </label>
       </div>
+      <?php wpmc_render_cookie_list( 'cookies_analytics' ); ?>
 
       <div class="wpmc-row">
         <div>
@@ -238,10 +318,11 @@ add_action('wp_footer', function () {
           <span class="wpmc-switch"></span>
         </label>
       </div>
+      <?php wpmc_render_cookie_list( 'cookies_ads' ); ?>
 
       <div class="wpmc-actions">
         <button id="wpmc-save" class="wpmc-btn wpmc-btn--primary"><?php echo esc_html( wpmc_text('txt_save') ); ?></button>
-        <button id="wpmc-close" class="wpmc-btn wpmc-btn--ghost" type="button"><?php echo esc_html( wpmc_text('txt_close') ); ?></button>
+        <button id="wpmc-close" class="wpmc-btn wpmc-btn--text" type="button"><?php echo esc_html( wpmc_text('txt_close') ); ?></button>
       </div>
     </div>
   </div>
