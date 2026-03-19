@@ -1,186 +1,162 @@
-# GTM – Configuración recomendada
+# Configuración de GTM para WP Minimal Consent
 
-Estas instrucciones describen cómo configurar **Google Tag Manager (GTM)** para trabajar correctamente con **WP Minimal Consent** usando **Google Consent Mode v2 (Advanced Mode)**.
+Esta guía explica cómo configurar **Google Tag Manager (GTM)** para que funcione correctamente con el plugin.
 
-> ⚠️ El plugin **no dispara etiquetas ni gestiona proveedores**.
-> GTM es el responsable final de decidir **qué etiquetas se ejecutan y cuándo**, en función del consentimiento recibido.
+> **Idea clave**: el plugin gestiona el consentimiento del usuario y envía las señales a GTM. GTM decide qué etiquetas se disparan y cuándo. No dupliques lógica en los dos sitios.
 
-## 1. Principios clave
+---
 
-**_( Leer antes de configurar nada )_**
+## Antes de empezar — cómo funciona la integración
 
-- **Google Tag Manager SIEMPRE se carga**
-- El plugin define `consent default = denied` **antes de GTM**
-- El plugin envía `consent update` cuando el usuario interactúa
-- **NO debes duplicar lógica de consentimiento en GTM**
-- **Consent Mode v2 es la fuente de verdad**
+```
+Plugin (WordPress)                    GTM
+─────────────────                     ───
+1. consent default = denied    →      GTM recibe el estado inicial
+2. GTM carga                   →      Tags quedan bloqueados
+3. Usuario acepta              →
+4. consent update = granted    →      GTM desbloquea los tags correctos
+5. wpmc_consent_update event   →      (opcional) activa tags adicionales
+```
 
-## 2. Configuración general del contenedor GTM
+El plugin nunca bloquea GTM. GTM siempre carga, pero con todo en `denied` hasta que el usuario decida.
 
-### 2.1 Activar Consent Overview (obligatorio)
+---
 
-En GTM:
+## 1. Activar Consent Overview (obligatorio)
+
+En GTM ve a:
 
 ```
 Admin → Container Settings → Enable consent overview
 ```
 
-Esto permite:
+Esto te permite ver qué etiquetas tienen (o no tienen) configuración de consentimiento, detectar conflictos y validar que todo funciona correctamente.
 
-- Auditar qué etiquetas requieren consentimiento
-- Ver conflictos de configuración
-- Validar que Consent Mode está funcionando correctamente
+**Hazlo antes de configurar ninguna etiqueta.**
 
-### 2.2 NO crear etiquetas de consentimiento en GTM
+---
 
-❌ **NO hagas esto**:
+## 2. Etiquetas de Google (GA4, Google Ads, Floodlight)
 
-- No crees etiquetas de tipo:
-  - “Consent Initialization”
-  - “Consent default”
-  - “Consent update”
-- No uses plantillas de consentimiento
+Las etiquetas oficiales de Google leen el estado de Consent Mode automáticamente. No necesitan configuración adicional.
 
-> El plugin ya gestiona todo esto **antes de GTM**.
+**Lo que debes hacer:**
+- Usa las etiquetas oficiales de Google normalmente
+- Deja la configuración de consentimiento en su valor por defecto
 
-## 3. Google tags (GA4, Google Ads, Floodlight, etc.)
+**Lo que NO debes hacer:**
+- No bloquees manualmente el Google tag
+- No añadas triggers condicionales de consentimiento
+- No crees etiquetas del tipo "Consent Initialization" o "Consent default" — el plugin ya lo hace antes de que GTM cargue
 
-### Qué hacer
+Las etiquetas de Google detectan automáticamente el estado de `analytics_storage`, `ad_storage`, `ad_user_data` y `ad_personalization` y se comportan en consecuencia.
 
-- Usa **tags oficiales de Google**
-- Mantén la configuración por defecto de consentimiento
-- Deja que GTM + Consent Mode gestionen el bloqueo
+---
 
-### Qué NO hacer ❌
+## 3. Etiquetas no-Google (Clarity, Hotjar, Meta, TikTok, LinkedIn…)
 
-- No bloquees el Google tag
-- No añadas triggers condicionales
-- No añadas reglas manuales de consentimiento
+Estos proveedores **no respetan Consent Mode automáticamente**. Hay que controlarlos mediante triggers condicionales.
 
-### Por qué
+### Paso 1 — Activa las variables integradas de estado de consentimiento
 
-Los Google tags:
+En GTM ve a **Variables → Variables integradas → Configurar** y activa:
 
-- Detectan automáticamente el estado de:
-  - `analytics_storage`
-  - `ad_storage`
-  - `ad_user_data`
-  - `ad_personalization`
-- Se ejecutan o se limitan según Consent Mode v2
+- `Consent State - analytics_storage`
+- `Consent State - ad_storage`
+- `Consent State - ad_user_data`
+- `Consent State - ad_personalization`
 
-## 4. No-Google tags (Clarity, Hotjar, Meta, TikTok, etc.)
+### Paso 2 — Crea variables derivadas (recomendado)
 
-Estos proveedores **NO respetan Consent Mode automáticamente** y deben controlarse mediante **triggers condicionales**.
+Evita repetir condiciones en cada etiqueta creando dos variables de tipo **Fórmula JavaScript personalizada**:
 
-### 4.1 Variables de consentimiento (recomendado)
-
-Crea las siguientes **Variables integradas de GTM** (Consent State):
-
-```
-{{CONSENT – analytics_storage}}
-{{CONSENT – ad_storage}}
-{{CONSENT – ad_user_data}}
-{{CONSENT – ad_personalization}}
+**Variable: `WPMC - Analytics Granted`**
+```js
+function() {
+  return {{Consent State - analytics_storage}} === 'granted';
+}
 ```
 
-### 4.2 Variables derivadas (mejor práctica)
-
-Para evitar repetir lógica en cada etiqueta, crea estas variables:
-
-#### Analytics
-
-```
-{{WPMC – AnalyticsGranted}}
-→ {{CONSENT – analytics_storage}} equals granted
+**Variable: `WPMC - Marketing Granted`**
+```js
+function() {
+  return {{Consent State - ad_storage}} === 'granted'
+    && {{Consent State - ad_user_data}} === 'granted'
+    && {{Consent State - ad_personalization}} === 'granted';
+}
 ```
 
-#### Marketing / Ads
+### Paso 3 — Crea los triggers condicionales
 
-```
-{{WPMC – MarketingGranted}}
-→ {{CONSENT – ad_storage}} equals granted
-AND {{CONSENT – ad_user_data}} equals granted
-AND {{CONSENT – ad_personalization}} equals granted
-```
+**Trigger: `Page View - Analytics Granted`**
+- Tipo: Vista de página
+- Activación: Algunas vistas de página
+- Condición: `WPMC - Analytics Granted` es igual a `true`
 
-### 4.3 Triggers recomendados
+**Trigger: `Page View - Marketing Granted`**
+- Tipo: Vista de página
+- Activación: Algunas vistas de página
+- Condición: `WPMC - Marketing Granted` es igual a `true`
 
-#### Analytics (Clarity, Hotjar, etc.)
+### Paso 4 — Asigna los triggers a las etiquetas
 
-- Tipo: **Page View**
-- Activación: **Some Page Views**
-- Condición:
-  ```
-  {{WPMC – AnalyticsGranted}} = true
-  ```
-- Nombre sugerido:
-  ```
-  Page View – Analytics Granted
-  ```
+| Etiqueta | Trigger a usar |
+|---|---|
+| Microsoft Clarity | Page View - Analytics Granted |
+| Hotjar | Page View - Analytics Granted |
+| Meta Pixel | Page View - Marketing Granted |
+| TikTok Pixel | Page View - Marketing Granted |
+| LinkedIn Insight | Page View - Marketing Granted |
 
-Asigna este trigger a todas las etiquetas de analítica no-Google.
+---
 
-#### Marketing (Meta, TikTok, LinkedIn, etc.)
+## 4. Evento de actualización de consentimiento (opcional)
 
-- Tipo: **Page View**
-- Activación: **Some Page Views**
-- Condición:
-  ```
-  {{WPMC – MarketingGranted}} = true
-  ```
-- Nombre sugerido:
-  ```
-  Page View – Marketing Granted
-  ```
+Cuando el usuario cambia sus preferencias **sin recargar la página**, el plugin emite:
 
-Asigna este trigger a todas las etiquetas de marketing.
-
-## 5. Evento de actualización de consentimiento (opcional)
-
-El plugin emite el siguiente evento cuando el usuario cambia su elección:
-
-```
-event: wpmc_consent_update
+```js
+dataLayer.push({ event: 'wpmc_consent_update' })
 ```
 
-### Cuándo usarlo
+Útil para reactivar etiquetas después de aceptar cookies sin necesitar recarga.
 
-- Para etiquetas que deben dispararse **después** de aceptar cookies
-- Para reactivar scripts sin recargar la página
+**Cómo configurarlo:**
 
-### Cómo configurarlo
+Crea un trigger:
+- Tipo: **Evento personalizado**
+- Nombre del evento: `wpmc_consent_update`
+- Nombre sugerido: `WPMC - Consent Update`
 
-- Trigger:
-  - Tipo: **Custom Event**
-  - Event name: `wpmc_consent_update`
-- Nombre sugerido:
-  ```
-  WPMC – Consent Update
-  ```
+Puedes combinarlo con las variables `WPMC - Analytics Granted` o `WPMC - Marketing Granted` para disparar solo si la categoría relevante fue aceptada.
 
-Este trigger puede combinarse con las variables `WPMC – AnalyticsGranted` o `WPMC – MarketingGranted`.
+---
 
-## 6. Validación y testing
+## 5. Validación
 
-- Consent Overview sin errores
-- Google tags visibles pero restringidos antes del consentimiento
-- `dataLayer` contiene:
-  - `consent default`
-  - `consent update`
-  - `wpmc_consent_update`
-- Las etiquetas no-Google solo disparan tras consentimiento
+Antes de publicar, comprueba en **GTM Preview Mode**:
 
-### Herramientas recomendadas
+- [ ] Consent Overview no muestra etiquetas sin configuración de consentimiento
+- [ ] Las etiquetas de Google se ven pero están restringidas antes del consentimiento
+- [ ] El `dataLayer` contiene `consent default` al cargar la página
+- [ ] El `dataLayer` contiene `consent update` tras aceptar
+- [ ] El `dataLayer` contiene el evento `wpmc_consent_update`
+- [ ] Las etiquetas no-Google solo disparan después de dar consentimiento en la categoría correcta
 
-- GTM Preview Mode
-- Chrome DevTools → Application → Cookies
-- DebugView (GA4)
-- Tag Assistant (solo como complemento)
+**Herramientas recomendadas:**
 
-## 7. Errores comunes a evitar
+- GTM Preview Mode — para ver qué etiquetas disparan y cuándo
+- Chrome DevTools → Application → Cookies — para ver el valor de `wpmc_consent`
+- DebugView en GA4 — para confirmar que llegan hits
+- Tag Assistant — como complemento, no como referencia principal
 
-- Bloquear GTM
-- Duplicar consentimiento en GTM
-- Usar Consent Initialization tags
-- Disparar etiquetas por Page View sin condiciones
-- Confiar en banners sin validar GTM
+---
+
+## 6. Errores frecuentes
+
+| Error | Consecuencia | Solución |
+|---|---|---|
+| Crear etiquetas "Consent default" en GTM | El consentimiento se define dos veces, puede sobrescribir lo del plugin | Eliminar esas etiquetas — el plugin ya lo hace |
+| Bloquear el tag de GTM con condiciones | GTM no carga y Consent Mode no funciona | No bloquear GTM nunca |
+| Etiquetas no-Google sin trigger condicional | Disparan antes del consentimiento | Añadir trigger con variable derivada |
+| Disparar por Page View sin condiciones | Tracking sin consentimiento | Usar triggers condicionales siempre para no-Google |
+| Confiar solo en el banner sin validar GTM | Tags pueden disparar igual | Siempre validar con Preview Mode |

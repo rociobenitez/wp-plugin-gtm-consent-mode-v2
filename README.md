@@ -1,201 +1,170 @@
-# WP Minimal Consent (GTM + Consent Mode v2)
+# WP Minimal Consent
 
-**WP Minimal Consent** es un **plugin CMP (Consent Management Platform) minimalista para WordPress**, orientado a **desarrolladores**, que implementa correctamente **Google Consent Mode v2** y actúa como **intermediario técnico entre el usuario y Google Tag Manager (GTM)**.
+**Plugin de consentimiento de cookies para WordPress**, ligero y orientado a desarrolladores, que implementa **Google Consent Mode v2** y se integra limpiamente con **Google Tag Manager (GTM)**.
 
-El plugin **no dispara tags**, **no gestiona proveedores desde PHP** ni reemplaza a GTM.
-Su función es **recoger el consentimiento del usuario, persistirlo de forma segura y comunicarlo correctamente a GTM** siguiendo las **mejores prácticas recomendadas por Google y GDPR (2026)**.
+> El plugin recoge el consentimiento del usuario, lo guarda en una cookie de primera parte y comunica las señales correctas a GTM. Las etiquetas y proveedores (GA4, Ads, Meta…) se gestionan en GTM, no en el plugin.
 
-## Objetivo del plugin
+![Banner de cookies en estilo modal](wp-minimal-consent/assets/screenshots/banner-desktop.png)
 
-- Proveer una **base sólida, ligera y controlable por código** para:
+## ¿Qué hace exactamente?
 
-  - Banner de cookies + panel granular
-  - Consent Mode v2 (Advanced Mode)
-  - Integración limpia con **Google Tag Manager**
-
-- Evitar soluciones “black box” y **delegar la lógica de proveedores y tags en GTM**, donde debe estar.
-
-## Filosofía
-
-- **GTM siempre cargado**, pero con todo en `denied` por defecto
-- **Consent Mode v2 es la fuente de verdad**
-- **El plugin no decide qué scripts cargar**, solo:
-  - Recoge el consentimiento
-  - Lo guarda (cookie 1ª parte)
-  - Emite señales estándar (`gtag` + `dataLayer`)
-- **Sin dependencias externas**
-- **Sin bloat**
-- **Pensado para proyectos reales con SEO / Analytics / Ads**
+1. Antes de cargar GTM, establece todos los permisos en `denied` (Advanced Mode)
+2. Carga GTM siempre — las etiquetas se bloquean solas hasta recibir consentimiento
+3. Muestra un banner al usuario (barra inferior o modal bloqueante)
+4. Cuando el usuario decide, guarda la elección en una **cookie de primera parte** y actualiza GTM via `gtag('consent', 'update', {...})`
 
 ## Características
 
-### Consentimiento
+### Banner y panel de preferencias
 
-- Implementación correcta de **Google Consent Mode v2**:
+- Dos estilos: **barra inferior** (discreta) o **modal centrado** (bloqueante)
+- Cuatro categorías de consentimiento: Necesarias, Funcionales, Analítica, Publicidad
+- Las cookies necesarias aparecen con un toggle bloqueado (no se pueden desactivar)
+- Lista de cookies desplegable por categoría (nombre, finalidad, duración, tipo)
+- Botón flotante para reabrir preferencias en cualquier momento
+- Diseño responsive — se adapta a móvil
 
-  - `analytics_storage`
-  - `ad_storage`
-  - `ad_user_data`
-  - `ad_personalization`
+<br>
 
-- **Advanced Mode** (valores por defecto antes de cargar GTM)
-- Actualización dinámica del consentimiento tras interacción del usuario
-- Evento estándar en `dataLayer`: `wpmc_consent_update`
+![Banner de cookies en estilo modal](wp-minimal-consent/assets/screenshots/banner-desktop-cookies.png)
 
-### Banner de cookies
+### Integración con GTM y Consent Mode v2
 
-- Banner inicial con:
+- Implementa **Advanced Mode**: defaults en `denied` antes de que cargue GTM
+- Señales gestionadas: `analytics_storage`, `ad_storage`, `ad_user_data`, `ad_personalization`
+- `wait_for_update` configurable para evitar que las etiquetas disparen demasiado rápido
+- Emite el evento `wpmc_consent_update` al `dataLayer` cuando el usuario cambia su elección
+- Inyección opcional del tag `<noscript>` de GTM (o delega en el tema)
 
-  - Aceptar todo
-  - Rechazar todo
-  - Gestionar preferencias
+### Panel de administración
 
-- Panel granular:
+- Menú propio en el sidebar de WordPress: **Consent → Ajustes**
+- Configuración visual organizada en tarjetas
+- Colores personalizables: botón Aceptar y fondo del banner
+- Textos del banner y del panel editables sin tocar código
+- Lista de cookies pre-rellena con valores típicos de GA4 y Google Ads
 
-  - Necesarias (siempre activas)
-  - Analítica
-  - Marketing / Publicidad
+<br>
 
-- Botón flotante para reabrir preferencias
-- Accesible y sin dependencias JS externas
+![Panel de preferencias de cookies](wp-minimal-consent/assets/screenshots/preferences-panel.png)
 
-### Persistencia
+### Técnico
 
-- **Cookie de primera parte**
-- Incluye:
-
-  - versión de la política
-  - timestamp
-  - categorías aceptadas
-
-- No usa base de datos
-- No usa localStorage
-
-### Desarrollo
-
-- Configuración mediante **Settings API de WordPress**
-- Logs de depuración opcionales (`WPMC_DEBUG`)
-- API JS mínima para integraciones avanzadas
-- Código modular y extensible
-
-## Qué NO hace este plugin
-
-Es importante dejarlo claro:
-
-- No bloquea Google Tag Manager
-- No dispara Google Analytics, Ads, Meta, etc.
-- No decide qué proveedor se carga
-- No gestiona tags de terceros fuera de GTM
-- No realiza geolocalización por IP
-
-> **Todo lo relacionado con proveedores y tags se gestiona en GTM**, como recomienda Google.
+- Sin dependencias externas (ni jQuery, ni librerías de terceros)
+- Cookie de primera parte con atributos `Secure`, `SameSite=Lax`
+- API JavaScript para integraciones avanzadas
+- Bloqueo opcional de scripts externos no gestionados por GTM
+- Desinstalación limpia: elimina `wpmc_options` de la base de datos
 
 ## Requisitos
 
-- WordPress **5.9+**
-- PHP **7.4+**
-- **Google Tag Manager (Web container)** correctamente configurado
-- Conocimientos básicos de GTM y Consent Mode
-
-_(Opcional para testing: GA4 / Ads / Clarity / etc.)_
+- WordPress 5.9+
+- PHP 7.4+
+- Google Tag Manager (contenedor Web) configurado correctamente
 
 ## Instalación
 
-1. Copia la carpeta `wp-minimal-consent` en:
-
-   ```
-   wp-content/plugins/
-   ```
-
+1. Copia la carpeta `wp-minimal-consent` en `wp-content/plugins/`
 2. Activa el plugin en **WP → Plugins**
-3. Ve a **Ajustes → WP Minimal Consent**
-4. Configura:
+3. Ve a **Consent → Ajustes** en el menú lateral del administrador
+4. Introduce tu **GTM Container ID** (ejemplo: `GTM-ABCDE12`)
+5. Añade la URL de tu **política de privacidad**
+6. Elige el estilo del banner y ajusta los textos si lo necesitas
 
-   - ID de Google Tag Manager
-   - Textos del banner
-   - Opciones básicas
+## Flujo de funcionamiento
 
-## Flujo de funcionamiento (arquitectura)
+```
+<head>
+  ↓ gtag('consent', 'default', { todo: 'denied' })   ← plugin
+  ↓ GTM carga                                        ← plugin
+  ↓ Tags en GTM quedan bloqueados                    ← GTM
 
-### 1. Antes de cargar GTM (`<head>`)
+<body>
+  ↓ Banner visible al usuario                        ← plugin
 
-- Se inicializa `dataLayer`
-- Se ejecuta:
+El usuario acepta/rechaza
+  ↓ Cookie de primera parte guardada                 ← plugin
+  ↓ gtag('consent', 'update', {...})                 ← plugin
+  ↓ dataLayer.push({ event: 'wpmc_consent_update' }) ← plugin
+  ↓ GTM decide qué tags disparar                     ← GTM
+```
 
-  ```js
-  gtag("consent", "default", {
-    analytics_storage: "denied",
-    ad_storage: "denied",
-    ad_user_data: "denied",
-    ad_personalization: "denied",
-    wait_for_update: 500,
-  });
-  ```
+## API JavaScript
 
-> Esto cumple GDPR y las recomendaciones oficiales de Google.
+El plugin expone una API mínima accesible desde `window`:
 
-### 2. Carga de Google Tag Manager
+```js
+// Leer el consentimiento actual (devuelve objeto o null)
+window.RcConsent.getConsent();
 
-- GTM **siempre se carga**
-- Todos los tags quedan **bloqueados por consentimiento**
+// Guardar consentimiento manualmente
+window.RcConsent.setConsent({
+  necessary: true,
+  analytics: true,
+  ads: false,
+  functional: false,
+});
 
-### 3. Interacción del usuario
+// Comprobar si una categoría está permitida
+window.RcConsent.hasConsent("analytics"); // → true / false
 
-- El usuario acepta, rechaza o configura categorías
-- El consentimiento se guarda en una **cookie de primera parte**
-- Se ejecuta:
+// Versión simplificada (recomendada en código custom)
+window.wpmcCanRun("analytics"); // → true / false
+window.wpmcCanRun("ads");
+window.wpmcCanRun("functional");
+window.wpmcCanRun("necessary");
+```
 
-  ```js
-  gtag('consent', 'update', {...});
-  ```
+## Bloquear scripts fuera de GTM
 
-- Se emite el evento:
+Si tienes scripts de terceros que no pasan por GTM (por ejemplo, un pixel cargado directamente en el tema), puedes registrarlos con el filtro `wpmc_providers`. El plugin los imprimirá bloqueados y los activará cuando el usuario dé su consentimiento:
 
-  ```js
-  dataLayer.push({ event: "wpmc_consent_update" });
-  ```
+```php
+add_filter( 'wpmc_providers', function ( $providers ) {
+  $providers['mi_proveedor'] = array(
+    'category' => 'analytics',  // 'analytics' | 'ads' | 'functional'
+    'type'     => 'script',
+    'src'      => 'https://ejemplo.com/script.js',
+    'attrs'    => array( 'async' => true ),
+  );
+  return $providers;
+} );
+```
 
-### 4. Google Tag Manager actúa
+## Configuración de GTM
 
-- GTM decide:
+Ver guía detallada: [gtm_instructions.md](gtm_instructions.md)
 
-  - qué tags se disparan
-  - cuándo
-  - bajo qué condiciones
-
-- El plugin **no interfiere**
-
-## Desarrollo y depuración
-
-- Activar logs:
-  - En `/includes/config.php`, establecer `debug` a `1`
-- Revisar en DevTools:
-  - `document.cookie`
-  - `dataLayer`
-  - llamadas a `gtag('consent', ...)`
-- Usar **GTM Preview Mode** para validar disparos
-
-## Integración con Google Tag Manager
-
-Consulta la guía detallada: [`gtm_instructions.md`](gtm_instructions.md)
-
-Incluye:
-
-- Configuración de Consent Overview
-- Variables de estado de consentimiento
-- Triggers recomendados
-- Manejo de Analytics, Ads y terceros (Clarity, Meta, etc.)
+Incluye cómo configurar Consent Overview, variables de estado, triggers para etiquetas no-Google (Clarity, Meta, TikTok…) y errores comunes.
 
 ## Cumplimiento GDPR
 
-- Denegación por defecto
-- Consentimiento explícito
-- Separación clara de finalidades
-- Persistencia auditable
-- Arquitectura alineada con:
+- Denegación por defecto para todos los visitantes
+- Consentimiento explícito requerido antes de cualquier tracking
+- Separación clara de finalidades (analítica / publicidad / funcional)
+- Sin almacenamiento server-side del consentimiento individual
+- Arquitectura alineada con Google Consent Mode v2 y recomendaciones del EDPB
 
-  - Google Consent Mode v2
-  - Recomendaciones EDPB
-  - Buenas prácticas CMP 2026
+> El cumplimiento legal final depende también del contenido jurídico del sitio (política de privacidad, cookies) y de la configuración correcta de GTM.
 
-> ⚠️ El cumplimiento legal final depende de la correcta configuración de GTM y del contenido legal del sitio.
+## Changelog
+
+### 0.2.0
+
+- Panel de administración rediseñado con layout de tarjetas y menú propio
+- Estilo modal añadido (bloqueante, con overlay difuminado)
+- Categoría funcional añadida al banner y al panel
+- Lista de cookies desplegable por categoría
+- Valores por defecto pre-rellenos para GA4 y Google Ads
+- Colores personalizables para botón y fondo del banner
+- Tag `<noscript>` de GTM inyectable desde el plugin (con toggle)
+- Toggle de cookies necesarias bloqueado visualmente
+- Desinstalación limpia con `uninstall.php`
+- Mejoras de accesibilidad: gestión de foco, ARIA, teclado
+
+### 0.1.1
+
+- Versión inicial
+- Consent Mode v2 con defaults en `denied`
+- Banner de barra + panel de preferencias (Analítica / Publicidad)
+- Página de ajustes básica
